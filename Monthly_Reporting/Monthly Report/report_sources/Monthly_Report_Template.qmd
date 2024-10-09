@@ -1,0 +1,71 @@
+# `r hw`
+
+```{r}
+
+# Create file paths
+raw_path   = '../data/raw/'
+clean_path = '../data/clean/'
+
+# Create Table
+file_name      <- paste(clean_path, params$year, '_', params$month, '_summary_data.csv', 
+                        sep = '')
+full_file_name <- paste(clean_path, params$year, '_', params$month, '_testing_data.csv', 
+                        sep = '')
+
+data           <- read.csv(file = file_name)
+athletes       <- unique(data$NAME)
+full_data      <- read.csv(file = full_file_name)
+full_data      <- full_data[full_data$NAME %in% athletes,] %>%
+                  arrange(NAME) %>%
+                  select(
+                    NAME,
+                    DATE,
+                    starts_with(hw)
+                  )
+full_data$DATE <- as.Date(full_data$DATE)
+
+test_current <- paste(hw, '_Current', sep = '')
+test_best_perc <- paste(hw, '_Best_perc', sep = '')
+test_last_perc <- paste(hw, '_Last_perc', sep = '')
+test_athletes <- unique(data$NAME[!is.na(data[[test_current]])])
+test_data <- full_data[full_data$NAME %in% test_athletes,]
+split_data <- split(test_data[[hw]], test_data$NAME)
+
+data[[test_best_perc]] <- data[[test_best_perc]] * 100
+data[[test_last_perc]] <- data[[test_last_perc]] * 100
+
+data[!is.na(data[[test_current]]),] %>%
+  cbind('Trend' = '') %>%
+  select(
+    NAME,
+    Trend,
+    starts_with(hw)) %>%
+  # rbind(
+  #   data.frame(
+  #     'Improvements',
+  #     '',
+  #     mean(data[[test_current]], na.rm = TRUE),
+  #     mean(data[[]])
+  #   )
+  # )
+  kable(
+    escape = FALSE,
+    digits = 2,
+    row.names = FALSE,
+    col.names = c('Name',
+                  'Trend',
+                  'Current',
+                  'Best',
+                  'Best Change',
+                  'Best % Change',
+                  'Previous',
+                  'Previous Change',
+                  'Previous % Change'
+                  )
+  ) %>%
+  kable_styling(
+    full_width = TRUE,
+    fixed_thead = TRUE
+  ) %>%
+  column_spec(2, image = spec_plot(split_data, same_lim = FALSE))
+```

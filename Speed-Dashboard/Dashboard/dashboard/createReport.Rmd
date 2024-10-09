@@ -1,0 +1,146 @@
+---
+title: "Report"
+format:
+  html:
+    embed-resources: true
+    theme: journal
+editor: visual
+output:
+  html_document:
+  pdf_document: 
+    keep_tex: true
+params:
+  data: NA
+  aths: NA
+  vars: NA
+  mins: NA
+execute:
+  echo: false
+  warnings: false
+  cache: false
+---
+
+```{r include = FALSE}
+library(pacman)
+pacman::p_load(kableExtra,
+               tidyverse,
+               readxl)
+               
+# data <- if ("AGE" %in% names(params$data)) {
+#   params$data %>% 
+#     select(-AGE)
+# } else {
+#   params$data
+# }
+# 
+# aths <- params$aths
+data <- read_xlsx(path = "../data/2024 Testing Data - Ballantyne.xlsx")
+aths <- "Sidd Dua"
+
+z_score <- function(x, na.rm = TRUE) {
+  (x - mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE)
+}
+
+minmax_norm <- function(x, na.rm = TRUE) {
+  x <- abs(x)
+  (x - min(x, na.rm = TRUE))/(max(x, na.rm = TRUE) - min(x, na.rm = TRUE))
+}
+```
+
+::::: {.columns style="display: flex;"}
+::: {.column width="60%"}
+```{r}
+#| echo:    FALSE
+#| message: FALSE
+#| warning: FALSE
+#| out.height: "100%"
+#| out.width: "100%"
+
+# Individual lollipop plot
+data %>%
+  filter(Athlete == aths) %>%
+  mutate_if(is.numeric, minmax_norm) %>%
+  select(-c(Date, Athlete)) %>%
+  t() %>%
+  as.data.frame() %>%
+  add_rownames() %>%
+  arrange(across(ncol(.))) %>%
+  relocate(Current = ncol(.), .after = V1) %>%
+  mutate(rowname = factor(rowname, rowname)) %>%
+  ggplot(mapping = aes(x = rowname, y = Current)) +
+  geom_point(size = 5, color = 'red', alpha = 0.5) +
+  geom_point(aes(y = V1), size = 3, color = 'grey40', alpha = 0.5) +
+  geom_segment(aes(x = rowname, xend = rowname,
+                   y = V1, yend = Current),
+               color = 'grey') +
+  geom_hline(yintercept = 0) +
+  coord_flip() +
+  labs(
+    title = "Individual Comparison",
+    x = "",
+    y = ""
+  )
+
+# Group lollipop plot
+data %>%
+  mutate_if(is.numeric, minmax_norm) %>%
+  filter(Athlete == aths) %>%
+  select(-c(Date, Athlete)) %>%
+  t() %>%
+  as.data.frame() %>%
+  add_rownames() %>%
+  arrange(across(ncol(.))) %>%
+  relocate(Current = ncol(.), .after = V1) %>%
+  mutate(rowname = factor(rowname, rowname)) %>%
+  ggplot(mapping = aes(x = rowname, y = Current)) +
+  geom_point(size = 5, color = 'red', alpha = 0.5) +
+  geom_point(aes(y = V1), size = 3, color = 'grey40', alpha = 0.5) +
+  geom_segment(aes(x = rowname, xend = rowname,
+                   y = V1, yend = Current),
+               color = 'grey') +
+  geom_hline(yintercept = 0) +
+  coord_flip() +
+  labs(
+    title = "Group Comparison",
+    x = "",
+    y = ""
+  )
+```
+:::
+
+::: column
+```{r}
+#| echo:    FALSE
+#| message: FALSE
+#| warning: FALSE
+#| out.height: "100%"
+#| out.width: "100%"
+
+initial <- data[data$Athlete == aths, ] %>%
+  select(where(is.numeric)) %>%
+  head(1)
+
+current <- data[data$Athlete == aths, ] %>%
+  select(where(is.numeric)) %>%
+  tail(1)
+
+best    <- data[data$Athlete == aths, ] %>%
+  summarise(across(is.numeric,
+            ~ max(.x, na.rm = TRUE)))
+
+summ_data <- rbind(initial, current, best) %>%
+  t() %>%
+  as.data.frame() %>%
+  relocate(Initial = 1, Current = 2, Best = 3) %>%
+  mutate(Best = ifelse(is.infinite(Best), NA, Best)) %>%
+  arrange(across(Best, desc)) %>%
+  filter(!is.na(Best))
+
+summ_data %>%
+  kable(
+    digits = 2
+  )
+
+```
+:::
+:::::

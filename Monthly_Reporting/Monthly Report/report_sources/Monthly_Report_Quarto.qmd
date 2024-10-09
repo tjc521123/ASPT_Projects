@@ -1,0 +1,59 @@
+---
+title:    "Monthly Report - `r paste(params$year, '-', params$month, sep = '')`"
+format:   
+  html:
+    embed-resources: true
+    theme: journal
+editor:   visual
+params:
+  month:   10
+  year:    2024
+execute: 
+  echo:    false
+  warning: false
+  cache:   false
+---
+
+```{r}
+library(kableExtra)
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+
+# Create file paths
+raw_path   = '../data/raw/'
+clean_path = '../data/clean/'
+
+# Read data from summary_data csv
+file_NAME <- paste(clean_path, params$year, '_', params$month, '_summary_data.csv', 
+                   sep = '')
+full_file_NAME <- paste(clean_path, params$year, '_', params$month, '_testing_data.csv', 
+                        sep = '')
+
+data           <- read.csv(file = file_NAME)
+athletes       <- unique(data$NAME)
+full_data      <- read.csv(file = full_file_NAME)
+full_data      <- full_data[full_data$NAME %in% athletes,] %>%
+                  arrange(NAME)
+full_data$DATE <- as.Date(full_data$DATE)
+tests          <- full_data %>%
+                  select(CMJ_IMP_MOM,
+                         BROAD_JUMP,
+                         IMTP_PEAK,
+                         IMTP_FBW,
+                         SPLIT_10,
+                         SPRINT_20,
+                         PRO_AGILITY) %>%
+                  names()
+
+```
+
+::: panel-tabset
+```{r}
+#| output: asis
+res <- purrr::map_chr(tests, \(hw) {
+    knitr::knit_child('Monthly_Report_Template.qmd', envir = environment(), quiet = TRUE)
+  })
+cat(res, sep = '\n')
+```
+:::
