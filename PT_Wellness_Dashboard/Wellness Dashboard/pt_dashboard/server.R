@@ -9,11 +9,21 @@ pacman::p_load(shiny,
                plotly,
                DT,
                tools,
-               rmarkdown)
+               rmarkdown,
+               RColorBrewer)
 
 # -----------------------------------
-# Rolling Mean Function
+# Custom Functions/Variables
 # -----------------------------------
+palettes <- list(
+  SANE        = brewer.pal(3, 'Set1'),
+  Performance = brewer.pal(3, 'Set1'),
+  Wellness    = brewer.pal(3, 'Set1'),
+  Severity    = brewer.pal(3, 'Set1'),
+  Frequency   = brewer.pal(3, 'Set1'),
+  Sleep       = brewer.pal(3, 'Set1')
+)
+
 rolling_mean <- function(x) {
   rollmean(x, k = 3, fill = NA, align = 'right')
 }
@@ -24,6 +34,10 @@ scale_func <- function(x) {
 
 perc_change <- function(x) {
   round((tail(x, 1) - head(x, 1)) / head(x, 1) * 100, digits = 1)
+}
+
+get_palette <- function(x) {
+  palettes[x]
 }
 
 function(input, output, sesssion) {
@@ -96,7 +110,7 @@ function(input, output, sesssion) {
       tmp <- data$raw
 
       choices <- c(1: min(3, length(tmp$Name[tmp$Name == input$patientSelect])))
-      print(choices)
+
       updateSelectInput(
         inputId  = 'rollWindow',
         choices  = choices,
@@ -114,7 +128,7 @@ function(input, output, sesssion) {
       tmp <- data$raw
       
       choices <- c(1: min(3, length(tmp$Name[tmp$Name == input$patientSelect])))
-      print(choices)
+      
       updateSelectInput(
         inputId  = 'rollWindow',
         choices  = choices,
@@ -224,6 +238,7 @@ function(input, output, sesssion) {
       Sys.sleep(3)
       
       tmp <- data$raw[data$raw$Name == input$patientSelect, ]
+      levels <- c('SANE', 'Performance', 'Wellness', 'Sleep', 'Frequency', 'Severity')
       
       plot <- tmp %>%
         pivot_longer(
@@ -237,7 +252,7 @@ function(input, output, sesssion) {
                                     k = as.integer(input$rollWindow),
                                     fill = NA, align = 'right')) %>%
         mutate(Question = factor(Question, 
-                                 levels = c('SANE', 'Performance', 'Wellness', 'Sleep', 'Frequency', 'Severity'))) %>%
+                                 levels = levels)) %>%
         ggplot(mapping = aes(x = Date, y = Response)) +
         geom_area(aes(color = Question, fill = Question, alpha = 0.5)) +
         geom_point()
@@ -252,6 +267,7 @@ function(input, output, sesssion) {
         theme(legend.position = 'none',
               panel.spacing = unit(2, 'lines'),
               axis.title.x = element_blank()) +
+        # scale_color_manual(values = unlist(lapply(unique(levels), get_palette))) +
         scale_y_continuous(labels = scale_func)
       
       plot
