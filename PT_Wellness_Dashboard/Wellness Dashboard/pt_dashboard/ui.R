@@ -19,7 +19,10 @@ fluidPage(
   # -----------------------------------
   # Dashboard Title
   # -----------------------------------
-  titlePanel('Wellness Dashboard'),
+  titlePanel(div(
+    div(img(src = 'logo.png', style = "height: 100px;")),
+    div("Wellness Dashboard"))
+  ),
   
   # -----------------------------------
   # Create Sidebar layout
@@ -78,22 +81,30 @@ fluidPage(
     # ---------------------------------
     mainPanel(
       tabsetPanel(
-        tabPanel('Raw Data', wellPanel(dataTableOutput(outputId = 'table'))),
         tabPanel('Patient Overview', 
                  wellPanel(fluidRow(
                    fluidRow(
-                     column(width = 4, h3('SANE'), verbatimTextOutput('txtSANE')),
-                     column(width = 4, h3('Performance'), verbatimTextOutput('txtPerformance')),
-                     column(width = 4, h3('Wellness'), verbatimTextOutput('txtWellness'))
+                     column(width = 1),
+                     column(width = 2, h3('SANE', align = 'center'), textOutput('txtSANE')),
+                     column(width = 2),
+                     column(width = 2, h3('Performance', align = 'center'), textOutput('txtPerformance')),
+                     column(width = 2),
+                     column(width = 2, h3('Wellness', align = 'center'), textOutput('txtWellness')),
+                     column(width = 1)
                    ),
                    fluidRow(
-                     column(width = 4, h3('Frequency'), verbatimTextOutput('txtFrequency')),
-                     column(width = 4, h3('Severity'), verbatimTextOutput('txtSeverity')),
-                     column(width = 4, h3('Sleep'), verbatimTextOutput('txtSleep'))
+                     column(width = 1),
+                     column(width = 2, h3('Frequency', align = 'center'), textOutput('txtFrequency')),
+                     column(width = 2),
+                     column(width = 2, h3('Severity', align = 'center'), textOutput('txtSeverity')),
+                     column(width = 2),
+                     column(width = 2, h3('Sleep', algin = 'center'), textOutput('txtSleep')),
+                     column(width = 1)
                    )
                  ),
                  plotlyOutput(outputId = 'plot', height = '600px'))
-        )
+        ),
+        tabPanel('Raw Data', wellPanel(dataTableOutput(outputId = 'table')))
       )
     )
   ),

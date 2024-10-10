@@ -1,6 +1,4 @@
 ---
-title: "`r paste('Wellness Report - ', params$patient, sep = '')`"
-subtitle: "`r params$therapist`"
 format:
   html:
     embed-resources: true
@@ -22,6 +20,27 @@ execute:
   cache: false
 runtime: shiny
 ---
+
+:::::: {.cols style="display: flex"}
+
+::: col-md-8
+<h1>`r paste('Wellness Report - ', params$patient, sep = '')`</h1>
+
+<h2>PT: `r params$therapist`</h2>
+
+:::
+
+::: col-md-4
+![](logo.png){width="100%"}
+:::
+
+::::::
+
+```{r, echo=FALSE, out.width="50%"}
+# htmltools::img(src = "logo.png", 
+#                alt = 'logo', 
+#                style = 'position:absolute; top:0; right:0; padding:10px; height=20px')
+```
 
 ```{r}
 #| echo:    FALSE
@@ -53,13 +72,6 @@ opts_knit$set(
   root.dir = getwd()
 )
 
-
-
-# test_path <- "C:/Users/Caitie Mayo/OneDrive - Architech Sports and Physical Therapy/Performance Analyst/Wellness Questionnaire/Physical Therapy Wellness Questionnaire/pt_wellness_questionnaire.xlsx"
-# params$data <- read_excel(path = test_path, sheet = 'Form1')
-# params$patients <- unique(data$`What is your name?`)
-# params$therapist <- unique(data$`Who is your Physical Therapist?`)
-
 ```
 
 ```{r}
@@ -67,60 +79,49 @@ opts_knit$set(
 #| message: FALSE
 #| warning: FALSE
 
-# # Create Patient Select Dropdown
-# selectInput(
-#   inputId  = 'patientSelect',
-#   label    = 'Select patient to view',
-#   choices  = patients,
-#   selected = head(patients, 1)
-# )
 data <- params$data
 data <- data[data$Name == params$patient, ]
 
 ```
 
-:::::: {.cols style='display: flex;'}
-
-<div class = "col-md-4">
+:::::: {.cols style="display: flex; text-align: center; font-size: 20px"}
+::: col-md-4
 ### SANE
 
 `r perc_change(data$SANE)`%
-</div>
+:::
 
-<div class = "col-md-4">
+::: col-md-4
 ### Performance
 
 `r perc_change(data$Performance)`%
-</div>
+:::
 
-<div class = "col-md-4">
+::: col-md-4
 ### Wellness
 
 `r perc_change(data$Wellness)`%
-</div>
-
+:::
 ::::::
 
-:::::: {.cols style='display: flex;'}
-
-<div class = "col-md-4">
+:::::: {.cols style="display: flex; text-align: center; font-size: 20px"}
+::: col-md-4
 ### Sleep
 
 `r perc_change(data$Sleep)`%
-</div>
+:::
 
-<div class = "col-md-4">
+::: col-md-4
 ### Frequency
 
 `r perc_change(data$Frequency)`%
-</div>
+:::
 
-<div class = "col-md-4">
+::: col-md-4
 ### Severity
 
 `r perc_change(data$Severity)`%
-</div>
-
+:::
 ::::::
 
 ```{r}
@@ -128,6 +129,7 @@ data <- data[data$Name == params$patient, ]
 #| message: FALSE
 #| warning: FALSE
 #| output: asis
+#| out-width: 100%
 
 plot <- data %>%
   pivot_longer(
@@ -156,8 +158,11 @@ plot <- plot +
   theme_gray() +
   theme(legend.position = 'none',
         panel.spacing = unit(2, 'lines'),
+        axis.title.y = element_blank(),
         axis.title.x = element_blank()) +
   scale_y_continuous(labels = scale_func)
 
 plot
 ```
+
+
