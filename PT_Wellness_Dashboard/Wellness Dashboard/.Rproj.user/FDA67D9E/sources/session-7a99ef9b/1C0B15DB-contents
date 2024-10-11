@@ -1,0 +1,428 @@
+---
+title: \huge Rock Hill Gymnastics
+author: "Architech Sports and Physical Therapy"
+format: 
+  html: 
+    embed-resources: true
+editor: visual
+
+execute: 
+  echo: false
+  warning: false
+  cache: false
+---
+
+```{r}
+library(tidyverse)
+library(kableExtra)
+library(ggplot2)
+library(plotly)
+
+data <- read.csv(file = '../data/raw/fake_data.csv') %>%
+  arrange(Level, Athlete)
+data$Level <- factor(x = data$Level, levels = c('4', '6', '7', '8', '9', '10', 'Diamond', 'Platinum'))
+
+cmj_data <- data %>%
+  select(
+    Athlete,
+    Level,
+    !matches('^sl')
+  )
+
+sl_data <- data %>%
+  select(
+    Athlete,
+    Level,
+    matches('^sl')
+  )
+```
+
+::::::::::: panel-tabset
+# Jump Performance
+
+:::::: panel-tabset
+# Eccentric Duration
+
+|    Eccentric duration measures how long an athlete takes from the start of their downward movement to when they start to rebound back upwards. Generally, a longer eccentric duration is associated with higher levels of fatigue or a lack of strength. However, it may be a result of jumping technique, as well.
+
+::: panel-tabset
+# Countermovement Jump
+
+```{r}
+cmj_data %>%
+  select(ecc_dur, Level) %>%
+  ggplot(mapping = aes(x = ecc_dur, y = Level)) +
+    geom_boxplot(fill = 'red', alpha = 0.5) +
+    labs(x = 'Eccentric Duration') 
+
+cmj_data %>%
+  select(Level, Athlete, ecc_dur) %>%
+  kable(
+    align = 'c',
+    caption = 'Raw Data',
+    col.names = c('Athlete', 
+                  'Level', 
+                  'Eccentric Duration (s)'),
+    digits = 3
+  ) %>%
+  kable_styling(
+    bootstrap_options = c('striped', 'hover')
+  )
+
+```
+
+# Single Jump
+
+```{r}
+sl_data %>%
+  select(sl_ecc_dur_avg, Level) %>%
+  ggplot(mapping = aes(x = sl_ecc_dur_avg, y = Level)) +
+    geom_boxplot(fill = 'red', alpha = 0.5) +
+    labs(x = 'Average Eccentric Duration') 
+
+sl_data %>%
+  select(Level, Athlete, sl_ecc_dur_left, sl_ecc_dur_right) %>%
+  kable(
+    align = 'c',
+    caption = 'Raw Data',
+    col.names = c('Level', 
+                  'Athlete', 
+                  'Eccentric Duration - Left (s)', 
+                  'Eccentric Duration - Right (s)'),
+    digits = 3
+  ) %>%
+  kable_styling(
+    bootstrap_options = c('striped', 'hover')
+  )
+
+```
+:::
+
+# Jump Height
+
+|    Jump height is calculated by the Impulse-Momentum method, which uses the force produced into the plate to determine how high an athlete jumps. This is more accurate than using flight time, which other methods tend to use.
+
+::: panel-tabset
+# Countermovement Jump
+
+```{r}
+cmj_data %>%
+  select(height, Level) %>%
+  ggplot(mapping = aes(x = height, y = Level)) +
+    geom_boxplot(fill = 'red', alpha = 0.5) +
+    labs(x = 'Jump Height') 
+
+cmj_data %>%
+  select(Level, Athlete, height) %>%
+  kable(
+    align = 'c',
+    caption = 'Raw Data',
+    col.names = c('Athlete', 
+                  'Level', 
+                  'Jump Height (in)'),
+    digits = 3
+  ) %>%
+  kable_styling(
+    bootstrap_options = c('striped', 'hover')
+  )
+
+```
+
+# Single Jump
+
+```{r}
+sl_data %>%
+  select(sl_avg_height, Level) %>%
+  ggplot(mapping = aes(x = sl_avg_height, y = Level)) +
+    geom_boxplot(fill = 'red', alpha = 0.5) +
+    labs(x = 'Average Jump Height') 
+
+sl_data %>%
+  select(Level, Athlete, sl_height_left, sl_height_right) %>%
+  kable(
+    align = 'c',
+    caption = 'Raw Data',
+    col.names = c('Level', 
+                  'Athlete', 
+                  'Jump Height - Left (in)', 
+                  'Jump Height - Right (in)'),
+    digits = 3
+  ) %>%
+  kable_styling(
+    bootstrap_options = c('striped', 'hover')
+  )
+
+```
+:::
+
+# Reactive Strength Index
+
+|    The Reactive Strength Index - Modified (mRSI) is a measure of how "springy" an athlete is. Calculated by dividing the jump height by the total contraction time, the mRSI looks at how quickly an athlete is able to bounce off the floor during a jump. Additionally, it helps track fatigue, as an athlete may be able to jump the same height on two different occasions, but if one jump took longer on the ground, the mRSI would reflect this.
+
+::: panel-tabset
+# Countermovement Jump
+
+```{r}
+cmj_data %>%
+  select(mrsi, Level) %>%
+  ggplot(mapping = aes(x = mrsi, y = Level)) +
+    geom_boxplot(fill = 'red', alpha = 0.5) +
+    labs(x = 'mRSI') 
+
+cmj_data %>%
+  select(Level, Athlete, mrsi) %>%
+  kable(
+    align = 'c',
+    caption = 'Raw Data',
+    col.names = c('Athlete', 
+                  'Level', 
+                  'Reactive Strength Index - Mod.'),
+    digits = 3
+  ) %>%
+  kable_styling(
+    bootstrap_options = c('striped', 'hover')
+  )
+
+```
+
+# Single Jump
+
+```{r}
+sl_data %>%
+  select(sl_mrsi, Level) %>%
+  ggplot(mapping = aes(x = sl_mrsi, y = Level)) +
+    geom_boxplot(fill = 'red', alpha = 0.5) +
+    labs(x = 'Average mRSI') 
+
+sl_data %>%
+  select(Level, Athlete, sl_mrsi) %>%
+  kable(
+    align = 'c',
+    caption = 'Raw Data',
+    col.names = c('Level', 
+                  'Athlete', 
+                  'mRSI'),
+    digits = 3
+  ) %>%
+  kable_styling(
+    bootstrap_options = c('striped', 'hover')
+  )
+
+```
+:::
+::::::
+
+# Asymmetry
+
+:::::: panel-tabset
+# Eccentric
+
+|   Eccentric asymmetry measures the percent difference in left versus right during the lowering, eccentric portion at the start of the jump. This metric shows us how the athlete is loading each side differently while preparing to takeoff. Below, negative values are a left-bias, while positive values are right-biased.
+
+::: panel-tabset
+# Countermovement Jump
+
+```{r}
+cmj_data %>%
+  select(ecc_asymm, Level) %>%
+  ggplot(mapping = aes(x = ecc_asymm, y = Level)) +
+    geom_boxplot(fill = 'red', alpha = 0.5) +
+    labs(x = 'Eccentric Asymmetry %') 
+
+cmj_data %>%
+  select(Level, Athlete, ecc_asymm) %>%
+  mutate(Side = '') %>%
+  kable(
+    align = 'c',
+    caption = 'Raw Data',
+    col.names = c('Athlete', 
+                  'Level', 
+                  'Asymmetry',
+                  ''),
+    digits = 3
+  ) %>%
+  kable_styling(
+    bootstrap_options = c('striped', 'hover')
+  ) %>%
+  column_spec(
+    4,
+    image = spec_pointrange(x = cmj_data$ecc_asymm,
+                            xmin = min(cmj_data$ecc_asymm), xmax = max(cmj_data$ecc_asymm), vline = 0)
+  )
+
+```
+
+# Single Jump
+
+```{r}
+sl_data %>%
+  select(sl_ecc_asymm, Level) %>%
+  ggplot(mapping = aes(x = sl_ecc_asymm, y = Level)) +
+    geom_boxplot(fill = 'red', alpha = 0.5) +
+    labs(x = 'Eccentric Asymmetry') 
+
+sl_data %>%
+  select(Level, Athlete, sl_ecc_asymm) %>%
+  mutate(Side = '') %>%
+  kable(
+    align = 'c',
+    caption = 'Raw Data',
+    col.names = c('Level', 
+                  'Athlete', 
+                  'Asymmetry',
+                  ''),
+    digits = 3
+  ) %>%
+  kable_styling(
+    bootstrap_options = c('striped', 'hover')
+  ) %>%
+    column_spec(
+    4,
+    image = spec_pointrange(x = sl_data$sl_ecc_asymm,
+                            xmin = min(sl_data$sl_ecc_asymm), xmax = max(sl_data$sl_ecc_asymm), vline = 0)
+  )
+
+```
+:::
+
+# Concentric
+
+|    Concentric asymmetry looks at how balanced an athlete is during the rising portion of the jump. This tells us whether they are relying more on one side more than the other during the jump.
+
+::: panel-tabset
+# Countermovement Jump
+
+```{r}
+cmj_data %>%
+  select(con_asymm, Level) %>%
+  ggplot(mapping = aes(x = con_asymm, y = Level)) +
+    geom_boxplot(fill = 'red', alpha = 0.5) +
+    labs(x = 'Concentric Asymmetry %') 
+
+cmj_data %>%
+  select(Level, Athlete, con_asymm) %>%
+  mutate(Side = '') %>%
+  kable(
+    align = 'c',
+    caption = 'Raw Data',
+    col.names = c('Athlete', 
+                  'Level', 
+                  'Asymmetry',
+                  ''),
+    digits = 3
+  ) %>%
+  kable_styling(
+    bootstrap_options = c('striped', 'hover')
+  ) %>%
+  column_spec(
+    4,
+    image = spec_pointrange(x = cmj_data$con_asymm,
+                            xmin = min(cmj_data$con_asymm), xmax = max(cmj_data$con_asymm), vline = 0)
+  )
+
+```
+
+# Single Jump
+
+```{r}
+sl_data %>%
+  select(sl_con_asymm, Level) %>%
+  ggplot(mapping = aes(x = sl_con_asymm, y = Level)) +
+    geom_boxplot(fill = 'red', alpha = 0.5) +
+    labs(x = 'Eccentric Asymmetry') 
+
+sl_data %>%
+  select(Level, Athlete, sl_con_asymm) %>%
+  mutate(Side = '') %>%
+  kable(
+    align = 'c',
+    caption = 'Raw Data',
+    col.names = c('Level', 
+                  'Athlete', 
+                  'Asymmetry',
+                  ''),
+    digits = 3
+  ) %>%
+  kable_styling(
+    bootstrap_options = c('striped', 'hover')
+  ) %>%
+    column_spec(
+    4,
+    image = spec_pointrange(x = sl_data$sl_con_asymm,
+                            xmin = min(sl_data$sl_con_asymm), xmax = max(sl_data$sl_con_asymm), vline = 0)
+  )
+
+```
+:::
+
+# Landing
+
+|   Landing asymmetry looks at the peak force during the landing phase of the jump. Proper landing mechanics and robust eccentric strength and control allow an athlete to land safely and well-balanced.
+
+::: panel-tabset
+# Countermovement Jump
+
+```{r}
+cmj_data %>%
+  select(lan_asymm, Level) %>%
+  ggplot(mapping = aes(x = lan_asymm, y = Level)) +
+    geom_boxplot(fill = 'red', alpha = 0.5) +
+    labs(x = 'Concentric Asymmetry %') 
+
+cmj_data %>%
+  select(Level, Athlete, lan_asymm) %>%
+  mutate(Side = '') %>%
+  kable(
+    align = 'c',
+    caption = 'Raw Data',
+    col.names = c('Athlete', 
+                  'Level', 
+                  'Asymmetry',
+                  ''),
+    digits = 3
+  ) %>%
+  kable_styling(
+    bootstrap_options = c('striped', 'hover')
+  ) %>%
+  column_spec(
+    4,
+    image = spec_pointrange(x = cmj_data$lan_asymm,
+                            xmin = min(cmj_data$lan_asymm), xmax = max(cmj_data$lan_asymm), vline = 0)
+  )
+
+```
+
+# Single Jump
+
+```{r}
+sl_data %>%
+  select(sl_lan_asymm, Level) %>%
+  ggplot(mapping = aes(x = sl_lan_asymm, y = Level)) +
+    geom_boxplot(fill = 'red', alpha = 0.5) +
+    labs(x = 'Eccentric Asymmetry') 
+
+sl_data %>%
+  select(Level, Athlete, sl_lan_asymm) %>%
+  mutate(Side = '') %>%
+  kable(
+    align = 'c',
+    caption = 'Raw Data',
+    col.names = c('Level', 
+                  'Athlete', 
+                  'Asymmetry',
+                  ''),
+    digits = 3
+  ) %>%
+  kable_styling(
+    bootstrap_options = c('striped', 'hover')
+  ) %>%
+    column_spec(
+    4,
+    image = spec_pointrange(x = sl_data$sl_lan_asymm,
+                            xmin = min(sl_data$sl_lan_asymm), xmax = max(sl_data$sl_lan_asymm), vline = 0)
+  )
+
+```
+:::
+::::::
+:::::::::::

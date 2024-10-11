@@ -1,0 +1,180 @@
+---
+format:
+  html:
+    embed-resources: true
+    theme: journal
+editor: visual
+output:
+  html_document:
+  pdf_document: 
+    keep_tex: true
+params:
+  data: NA
+  patient: NA
+  therapist: NA
+  roll_window: NA
+  current_dir: getwd()
+execute:
+  echo: false
+  warnings: false
+  cache: false
+runtime: shiny
+---
+
+::::: {.cols style="display: flex"}
+::: col-md-8
+# **`r paste('Wellness Report - ', params$patient, sep = '')`**
+
+## **PT: `r params$therapist`**
+
+<h2 class="netTitle">
+
+Net Changes Over Time
+
+</h2>
+:::
+
+::: {.col-md-4 style="align: 'right'"}
+![](logo.png){width="200px"}
+:::
+:::::
+
+```{r}
+#| echo:    FALSE
+#| message: FALSE
+#| warning: FALSE
+
+library(kableExtra)
+library(shiny)
+library(tidyverse)
+library(zoo)
+library(ggplot2)
+library(knitr)
+library(grid)
+library(readxl)
+
+rolling_mean <- function(x) {
+  rollmean(x, k = 3, fill = NA, align = 'right')
+}
+
+scale_func <- function(x) {
+  sprintf("%.1f", x)
+}
+
+amount_changed <- function(x) {
+  change <- round(mean(tail(x, 3), na.rm = TRUE) - head(x, 1), digits = 1)
+  
+  if (change >= 0) {
+    paste("+", change, sep = "")
+  } else {
+    change
+  }
+}
+
+opts_knit$set(
+  root.dir = getwd()
+)
+
+```
+
+```{r}
+#| echo:    FALSE
+#| message: FALSE
+#| warning: FALSE
+
+data <- params$data
+data <- data[data$Name == params$patient, ]
+
+```
+
+::::::::: {style="display: grid;   grid-template-columns: 1fr 1fr 1fr; text-align: center; "}
+<div>
+
+### SANE
+
+`r amount_changed(data$SANE)`
+
+</div>
+
+<div>
+
+### Performance
+
+`r amount_changed(data$Performance)`
+
+</div>
+
+<div>
+
+### Wellness
+
+`r amount_changed(data$Wellness)`
+
+</div>
+
+<div>
+
+### Sleep
+
+`r amount_changed(data$Sleep)`
+
+</div>
+
+<div>
+
+### Frequency
+
+`r amount_changed(data$Frequency)`
+
+</div>
+
+<div>
+
+### Severity
+
+`r amount_changed(data$Severity)`
+
+</div>
+:::::::::
+
+
+```{r out.height='400px'}
+#| echo:    FALSE
+#| message: FALSE
+#| warning: FALSE
+#| output: asis
+#| out-width: 100%
+
+plot <- data %>%
+  pivot_longer(
+    cols = !c(Date, Name, Therapist),
+    names_to = "Question",
+    values_to = "Response",
+    values_drop_na = TRUE
+  ) %>%
+  group_by(Question) %>%
+  mutate(roll_mean = rollmean(Response, 
+                              k = as.integer(params$roll_window),
+                              fill = NA, align = 'right')) %>%
+  mutate(Question = factor(Question, 
+                           levels = c('SANE', 'Performance', 'Wellness', 'Sleep', 'Frequency', 'Severity'))) %>%
+  ggplot(mapping = aes(x = Date, y = Response)) +
+  geom_area(aes(color = Question, fill = Question, alpha = 0.5)) +
+  geom_point()
+
+if (length(data$Name) > 1) {
+  plot <- plot + 
+    geom_line(aes(y = roll_mean))
+}
+
+plot <- plot +
+  facet_wrap(~Question, nrow = 2, scales = 'free') +
+  theme_minimal() +
+  theme(legend.position = 'none',
+        panel.spacing = unit(2, 'lines'),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank()) +
+  scale_y_continuous(labels = scale_func)
+
+plot
+```

@@ -82,32 +82,35 @@ fluidPage(
     mainPanel(
       tabsetPanel(
         tabPanel('Patient Overview', 
-                 wellPanel(fluidRow(
+                 wellPanel(
+                   h3("Change from first response to current average"),
                    fluidRow(
-                     column(width = 1),
-                     column(width = 2, h3('SANE', align = 'center'), textOutput('txtSANE')),
-                     column(width = 2),
-                     column(width = 2, h3('Performance', align = 'center'), textOutput('txtPerformance')),
-                     column(width = 2),
-                     column(width = 2, h3('Wellness', align = 'center'), textOutput('txtWellness')),
-                     column(width = 1)
+                     fluidRow(
+                       column(width = 1),
+                       column(width = 2, align = 'center', h4('SANE', align = 'center'), textOutput('txtSANE')),
+                       column(width = 2),
+                       column(width = 2, align = 'center', h4('Performance', align = 'center'), textOutput('txtPerformance')),
+                       column(width = 2),
+                       column(width = 2, align = 'center', h4('Wellness', align = 'center'), textOutput('txtWellness')),
+                       column(width = 1)
+                     ),
+                     fluidRow(
+                       column(width = 1),
+                       column(width = 2, align = 'center', h4('Frequency', align = 'center'), textOutput('txtFrequency')),
+                       column(width = 2),
+                       column(width = 2, align = 'center', h4('Severity', align = 'center'), textOutput('txtSeverity')),
+                       column(width = 2),
+                       column(width = 2, align = 'center', h4('Sleep', algin = 'center'), textOutput('txtSleep')),
+                       column(width = 1)
+                     )
                    ),
-                   fluidRow(
-                     column(width = 1),
-                     column(width = 2, h3('Frequency', align = 'center'), textOutput('txtFrequency')),
-                     column(width = 2),
-                     column(width = 2, h3('Severity', align = 'center'), textOutput('txtSeverity')),
-                     column(width = 2),
-                     column(width = 2, h3('Sleep', algin = 'center'), textOutput('txtSleep')),
-                     column(width = 1)
-                   )
-                 ),
-                 plotlyOutput(outputId = 'plot', height = '600px'))
+                   plotlyOutput(outputId = 'plot', height = '600px')
+                 )
         ),
         tabPanel('Raw Data', wellPanel(dataTableOutput(outputId = 'table')))
       )
     )
-  ),
+  )
   
 
 )

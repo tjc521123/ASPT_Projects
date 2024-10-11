@@ -1,0 +1,32 @@
+library(tidyverse)
+library(readxl)
+
+file_path <- "C:/Users/Caitie Mayo/OneDrive - Architech Sports and Physical Therapy/Performance Analyst/Wellness Questionnaire/Physical Therapy Wellness Questionnaire/pt_wellness_questionnaire.xlsx"
+
+data <- read_excel(path = file_path,
+                   sheet = 'Form1')
+
+names(data) <- gsub(pattern     = "[^[:alnum:]]",
+                    replacement = "_",
+                    x           = names(data))
+
+rename_list <- c(start     = names(data)[2],
+                 end       = names(data)[3],
+                 sane      = names(data)[4],
+                 wellness  = names(data)[5],
+                 severity  = names(data)[6],
+                 frequency = names(data)[7],
+                 sleep     = names(data)[8],
+                 name      = names(data)[9])
+
+data <- data %>%
+  rename(all_of(rename_list))
+
+data$Name  <- NULL
+data$Email <- NULL
+data$Last_modified_time <- NULL
+
+data <- data %>%
+  mutate(
+    time = end - start
+  )

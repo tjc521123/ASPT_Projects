@@ -15,14 +15,6 @@ pacman::p_load(shiny,
 # -----------------------------------
 # Custom Functions/Variables
 # -----------------------------------
-palettes <- list(
-  SANE        = brewer.pal(3, 'Set1'),
-  Performance = brewer.pal(3, 'Set1'),
-  Wellness    = brewer.pal(3, 'Set1'),
-  Severity    = brewer.pal(3, 'Set1'),
-  Frequency   = brewer.pal(3, 'Set1'),
-  Sleep       = brewer.pal(3, 'Set1')
-)
 
 rolling_mean <- function(x) {
   rollmean(x, k = 3, fill = NA, align = 'right')
@@ -32,13 +24,16 @@ scale_func <- function(x) {
   sprintf("%.1f", x)
 }
 
-perc_change <- function(x) {
-  round((tail(x, 1) - head(x, 1)) / head(x, 1) * 100, digits = 1)
+amount_changed <- function(x) {
+  change <- round(mean(tail(x, 3), na.rm = TRUE) - head(x, 1), digits = 1)
+  
+  if (change >= 0) {
+    paste("+", change, sep = "")
+  } else {
+    change
+  }
 }
 
-get_palette <- function(x) {
-  palettes[x]
-}
 
 function(input, output, sesssion) {
   data <- reactiveValues(raw = NULL)
@@ -188,44 +183,40 @@ function(input, output, sesssion) {
   observeEvent(
     input$patientSelect,
     {
+      req(input$file)
+      
       tmp <- data$raw[data$raw$Name == input$patientSelect, ]
-      changes$SANE        <- perc_change(tmp$SANE)
-      changes$Performance <- perc_change(tmp$Performance)
-      changes$Wellness    <- perc_change(tmp$Wellness)
-      changes$Frequency   <- perc_change(tmp$Frequency)
-      changes$Severity    <- perc_change(tmp$Severity)
-      changes$Sleep       <- perc_change(tmp$Sleep)
+      changes$SANE        <- amount_changed(tmp$SANE)
+      changes$Performance <- amount_changed(tmp$Performance)
+      changes$Wellness    <- amount_changed(tmp$Wellness)
+      changes$Frequency   <- amount_changed(tmp$Frequency)
+      changes$Severity    <- amount_changed(tmp$Severity)
+      changes$Sleep       <- amount_changed(tmp$Sleep)
     }
   )
   
   output$txtSANE <- renderText({
-    paste(changes$SANE, "%",
-          sep = '')
+    changes$SANE
   })
   
   output$txtPerformance <- renderText({
-    paste(changes$Performance, "%", 
-          sep = '')
+    changes$Performance
   })
   
   output$txtWellness <- renderText({
-    paste(changes$Wellness, "%", 
-          sep = '')
+    changes$Wellness
   })
   
   output$txtFrequency <- renderText({
-    paste(changes$Frequency, "%", 
-          sep = '')
+    changes$Frequency
   })
   
   output$txtSeverity <- renderText({
-    paste(changes$Severity, "%", 
-          sep = '')
+    changes$Severity
   })
   
   output$txtSleep <- renderText({
-    paste(changes$Sleep, "%", 
-          sep = '')
+    changes$Sleep
   })
   
   #-----------------------------------------------------------------------------
@@ -235,7 +226,9 @@ function(input, output, sesssion) {
     expr = {
       req(input$file)
       
-      Sys.sleep(3)
+      validate(
+        need(!is.null(data$raw), "Loading data...")
+      )
       
       tmp <- data$raw[data$raw$Name == input$patientSelect, ]
       levels <- c('SANE', 'Performance', 'Wellness', 'Sleep', 'Frequency', 'Severity')
@@ -261,13 +254,18 @@ function(input, output, sesssion) {
         plot <- plot + 
           geom_line(aes(y = roll_mean))
       }
+      
+      validate(
+        need(!is.null(plot), "Loading plot...")
+      )
       plot <- plot +
         facet_wrap(~Question, nrow = 3, scales = 'free') +
-        theme_gray() +
+        theme_minimal() +
         theme(legend.position = 'none',
               panel.spacing = unit(2, 'lines'),
-              axis.title.x = element_blank()) +
-        # scale_color_manual(values = unlist(lapply(unique(levels), get_palette))) +
+              axis.title.x = element_blank(),
+              axis.title.y = element_blank(),
+              strip.text = element_text(face = 'bold')) +
         scale_y_continuous(labels = scale_func)
       
       plot
